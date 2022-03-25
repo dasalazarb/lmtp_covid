@@ -1,3 +1,4 @@
+## Code created by Katherine Hoffman - kah2797@med.cornell.edu
 library(lmtp) 
 library(tidyverse)
 library(survival)
