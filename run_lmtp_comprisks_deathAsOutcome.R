@@ -19,11 +19,21 @@ set.seed(7)
 dat_lmtp <- read_rds(here::here("data/derived/dat_final_deathAsOutcome.rds")) %>%
   filter(hypoxia_ed == 1) %>% # our cohort is only people who were hypoxic initially
   mutate(I_00 = ifelse(I_00 == 0, 1, I_00)) %>% 
-  replace(is.na(.), 0); dim(dat_lmtp)
+  replace(is.na(.), 0) %>% 
+  select(-ckd_or_esrd, -hypoxia_ed, -ild, -hiv, 
+         -hypoxia_ed_method_na, -hypoxia_ed_method_none); dim(dat_lmtp)
+
+# dat_slice <- dat_lmtp[,c(bs,"event")]
+# dat_slice.2 <- dat_slice %>% 
+#   select(event, age, smoking_no, smoking_former_smoker, smoking_active_smoker, bmi)
+# 
+# fit <- glmnet::glmnet(x = as.matrix(dat_slice.2[, c("age", "sex", "bmi")]), y = as.matrix(dat_slice.2[,"event"]$event), family = binomial(), alpha = 1)
+# 
+# summary(glm(formula = event ~ age + smoking_no + smoking_former_smoker + bmi, family = binomial(), data = dat_slice.2))
 
 trim <- .995
-folds <- 10
-SL_folds <- 10
+folds <- 5
+SL_folds <- 5
 k <- 2
 
 lrn_rf <- Lrnr_randomForest$new()
@@ -32,8 +42,9 @@ lrn_glm <- Lrnr_glm$new()
 lrn_mean <- Lrnr_mean$new()
 
 learners_simple <- unlist(list(
-  lrn_rf, 
-  lrn_glm,
+  # lrn_rf, 
+  # lrn_glm,
+  lrn_lasso,
   lrn_mean
 ), recursive = TRUE)
 
@@ -103,6 +114,7 @@ progressr::with_progress(
       intervention_type = "mtp"
     )
 )
+out_mtp
 
 ### Without mpt
 progressr::with_progress(
@@ -126,5 +138,5 @@ progressr::with_progress(
       intervention_type = "mtp"
     )
 )
-
+out_NULL
 
