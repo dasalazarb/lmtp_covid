@@ -57,7 +57,7 @@ outcomes <-
          cr = event_death_28d_from_hosp) %>%
   filter(fu > 0) # note that final cohort is 3,300
 
-
+max_fu_day <- 28
 intubation <-
   outcomes %>%
   select(id, fu, event, cr) %>%
@@ -73,7 +73,6 @@ intubation <-
               values_from = I,
               names_prefix = "I_")
 
-max_fu_day <- 28
 padded_days <- str_pad(0:(max_fu_day-1),2,pad="0")
 
 replace_obs <- as.list(rep(0,max_fu_day)) # replace with all 0s
@@ -161,7 +160,7 @@ for (i in 0:26){
     names()
   dat_final <-
     dat_final %>%
-    mutate(across(vars_for_na, ~case_when(.data[[paste0("C_", ip)]] == 0 ~ NA_real_,
+    mutate(across(all_of(vars_for_na), ~case_when(.data[[paste0("C_", ip)]] == 0 ~ NA_real_,
                                           .data[[paste0("Y_", ip1)]] == 1 ~ NA_real_,
                                           .data[[paste0("CR_", ip1)]] == 1 ~ NA_real_,
                                           TRUE ~ .x))) 
