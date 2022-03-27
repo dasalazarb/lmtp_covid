@@ -54,17 +54,17 @@ dat_lmtp <- read_rds(here::here("data/derived/dat_final_deathAsOutcome.rds")) %>
 # 
 # summary(glm(formula = event ~ ., family = binomial(), data = dat_slice.2))
 # 
-# cvfit <- glmnet::cv.glmnet(x = as.matrix(dat_slice[, !grepl("event", colnames(dat_slice))]),
-#                            y = as.matrix(dat_slice[,"event"]), family = binomial(),
-#                            alpha = 1, nfolds = 5); coef(cvfit, s = "lambda.min")
+cvfit <- glmnet::cv.glmnet(x = as.matrix(dat_slice[, !grepl("event", colnames(dat_slice))]),
+                           y = as.matrix(dat_slice[,"event"]), family = binomial(),
+                           alpha = 1, nfolds = 5); coef(cvfit, s = "lambda.min")
 
 trim <- .995
-folds <- 10
-SL_folds <- 10
+folds <- 5
+SL_folds <- 5
 k <- 2
 
 lrn_rf <- Lrnr_randomForest$new()
-lrn_lasso <- Lrnr_glmnet$new(alpha = 1, nfolds = 10)
+lrn_lasso <- Lrnr_glmnet$new(alpha = 1, stratify_cv = TRUE)
 lrn_glm <- Lrnr_glm$new()
 lrn_mean <- Lrnr_mean$new()
 
@@ -132,7 +132,7 @@ progressr::with_progress(
       cens = censoring,
       shift = mtp,
       outcome_type = "survival",
-      learners_outcome = lrnrs,
+      # learners_outcome = lrnrs,
       learners_trt = lrnrs,
       folds = folds,
       .SL_folds = SL_folds,
@@ -141,29 +141,29 @@ progressr::with_progress(
       intervention_type = "mtp"
     )
 )
-out_mtp
+# out_mtp
 
-### Without mpt
-progressr::with_progress(
-  out_NULL <-
-    lmtp_sdr(
-      dat_lmtp,
-      trt = a,
-      outcome = y,
-      # comp_risk = cr,
-      baseline = bs,
-      time_vary = tv,
-      cens = censoring,
-      shift = NULL,
-      outcome_type = "survival",
-      learners_outcome = lrnrs,
-      learners_trt = lrnrs,
-      folds = folds,
-      .SL_folds = SL_folds,
-      # .trim = trim,
-      k=k,
-      intervention_type = "mtp"
-    )
-)
-out_NULL
-
+# ### Without mpt
+# progressr::with_progress(
+#   out_NULL <-
+#     lmtp_sdr(
+#       dat_lmtp,
+#       trt = a,
+#       outcome = y,
+#       # comp_risk = cr,
+#       baseline = bs,
+#       time_vary = tv,
+#       cens = censoring,
+#       shift = NULL,
+#       outcome_type = "survival",
+#       learners_outcome = lrnrs,
+#       learners_trt = lrnrs,
+#       folds = folds,
+#       .SL_folds = SL_folds,
+#       # .trim = trim,
+#       k=k,
+#       intervention_type = "mtp"
+#     )
+# )
+# out_NULL
+# 
