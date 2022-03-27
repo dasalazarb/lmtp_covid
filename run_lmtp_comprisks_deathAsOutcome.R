@@ -30,40 +30,41 @@ dat_lmtp <- read_rds(here::here("data/derived/dat_final_deathAsOutcome.rds")) %>
          -hypoxia_ed_method_high_flow_nasal_cannula); dim(dat_lmtp) 
 
 
-dat_slice <- cbind(dat_lmtp[,c(bs,"event")], dat_lmtp[,tv[[1]]])
-dat_slice.2 <- dat_slice %>%
-  select(#ckd_or_esrd, cirrhosis, ild, hiv, hypoxia_ed_method_high_flow_nasal_cannula, hypoxia_ed_method_niv_bipap_cpap
-    #hypoxia_ed_method_venti_mask, smoking_active_smoker
-         event, age, sex, bmi,red_cap_source, cad, home_o2_yn,
-        dm, htn, cva, asthma, copd, active_cancer, immunosuppressed,
-        bmi_miss, home_o2_miss, race_miss, ethnicity_miss, race_asian,
-        race_black, race_missing, race_other, race_white, ethnicity_hispanic_or_latino_or_spanish_origin,
-        ethnicity_not_hispanic_or_latino_or_spanish_origin,ethnicity_not_hispanic_or_latino_or_spanish_origin,
-        hypoxia_ed_method_mechanical_ventilation,
-        hypoxia_ed_method_nasal_cannula, hypoxia_ed_method_non_rebreather,
-        smoking_former_smoker, smoking_no)
-
-
-for (i in bs) {
-  if (!(grepl("age", i) | grepl("bmi", i))) {
-    print(i); print(table(dat_slice[,i][[1]], dat_slice[,"event"]$event))
-  }
-}
-fit <- glmnet::glmnet(x = as.matrix(dat_slice.2[, c("age", "sex", "bmi")]), y = as.matrix(dat_slice.2[,"event"]$event), family = binomial(), alpha = 1)
-
-summary(glm(formula = event ~ ., family = binomial(), data = dat_slice.2))
-
-cvfit <- glmnet::cv.glmnet(x = as.matrix(dat_slice.2[, !grepl("event", colnames(dat_slice.2))]),
-                           y = as.matrix(dat_slice.2[,"event"]$event), family = binomial(),
-                           alpha = 1, nfolds = 5); coef(cvfit, s = "lambda.min")
+# dat_slice <- cbind(dat_lmtp[,c(bs,"event")], dat_lmtp[,tv[[1]]])
+# dat_slice.2 <- dat_slice %>%
+#   select(#ckd_or_esrd, cirrhosis, ild, hiv, hypoxia_ed_method_high_flow_nasal_cannula, hypoxia_ed_method_niv_bipap_cpap
+#     #hypoxia_ed_method_venti_mask, smoking_active_smoker
+#          event, age, sex, bmi,red_cap_source, cad, home_o2_yn,
+#         dm, htn, cva, asthma, copd, active_cancer, immunosuppressed,
+#         bmi_miss, home_o2_miss, race_miss, ethnicity_miss, race_asian,
+#         race_black, race_missing, race_other, race_white, ethnicity_hispanic_or_latino_or_spanish_origin,
+#         ethnicity_not_hispanic_or_latino_or_spanish_origin,ethnicity_not_hispanic_or_latino_or_spanish_origin,
+#         hypoxia_ed_method_mechanical_ventilation,
+#         hypoxia_ed_method_nasal_cannula, hypoxia_ed_method_non_rebreather,
+#         smoking_former_smoker, smoking_no); dim(dat_slice.2)
+# 
+# 
+# for (i in bs) {
+#   if (!(grepl("age", i) | grepl("bmi", i))) {
+#     print(i); print(table(dat_slice[,i][[1]], dat_slice[,"event"]$event))
+#   }
+# }
+# 
+# fit <- glmnet::glmnet(x = as.matrix(dat_slice.2[, c("age", "sex", "bmi")]), y = as.matrix(dat_slice.2[,"event"]$event), family = binomial(), alpha = 1)
+# 
+# summary(glm(formula = event ~ ., family = binomial(), data = dat_slice.2))
+# 
+# cvfit <- glmnet::cv.glmnet(x = as.matrix(dat_slice[, !grepl("event", colnames(dat_slice))]),
+#                            y = as.matrix(dat_slice[,"event"]), family = binomial(),
+#                            alpha = 1, nfolds = 5); coef(cvfit, s = "lambda.min")
 
 trim <- .995
-folds <- 5
-SL_folds <- 5
+folds <- 10
+SL_folds <- 10
 k <- 2
 
 lrn_rf <- Lrnr_randomForest$new()
-lrn_lasso <- Lrnr_glmnet$new(alpha = 1)
+lrn_lasso <- Lrnr_glmnet$new(alpha = 1, nfolds = 10)
 lrn_glm <- Lrnr_glm$new()
 lrn_mean <- Lrnr_mean$new()
 
