@@ -64,18 +64,22 @@ SL_folds <- 5
 k <- 2
 
 lrn_rf <- Lrnr_randomForest$new()
+lrn_glmfast <- Lrnr_glm_fast$new()
 lrn_lasso <- Lrnr_glmnet$new(alpha = 1, stratify_cv = TRUE)
-lrn_glm <- Lrnr_glm$new()
+lrn_glm <- Lrnr_glm$new(stratify_cv = TRUE)
 lrn_mean <- Lrnr_mean$new()
 lrn_bart <- Lrnr_bartMachine$new()
 lrn_earth <- Lrnr_earth$new()
 lrn_rpart <- Lrnr_rpart$new()
+lrnr_lgb <- Lrnr_lightgbm$new()
+lrn_ridge <- Lrnr_glmnet$new(alpha = 0)
+lrn_enet <- Lrnr_glmnet$new(alpha = 0.5)
 
 learners_simple <- unlist(list(
   # lrn_rf, 
   # lrn_glm,
   # lrn_lasso#,
-  lrn_bart,
+  lrnr_lgb,
   lrn_mean
 ), recursive = TRUE)
 
