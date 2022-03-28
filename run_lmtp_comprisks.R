@@ -43,7 +43,7 @@ mars_learners <- apply(mars_grid, MARGIN = 1, function(tuning_params) {
 })
 
 
-lrn_lasso <- Lrnr_glmnet$new(alpha = 1)
+lrn_lasso <- Lrnr_glmnet$new(alpha = 1, stratify_cv = TRUE)
 lrn_ridge <- Lrnr_glmnet$new(alpha = 0)
 lrn_enet <- Lrnr_glmnet$new(alpha = 0.5)
 lrn_bart <- Lrnr_bartMachine$new()

@@ -1,5 +1,5 @@
 ## Code created by Katherine Hoffman - kah2797@med.cornell.edu
-# options(java.parameters = "-Xmx20000m")
+options(java.parameters = "-Xmx20000m")
 
 # remotes::install_local(here::here("lmtp_1.0.0.5001.tar.gz"))
 
@@ -54,9 +54,9 @@ dat_lmtp <- read_rds(here::here("data/derived/dat_final_deathAsOutcome.rds")) %>
 # 
 # summary(glm(formula = event ~ ., family = binomial(), data = dat_slice.2))
 # 
-cvfit <- glmnet::cv.glmnet(x = as.matrix(dat_slice[, !grepl("event", colnames(dat_slice))]),
-                           y = as.matrix(dat_slice[,"event"]), family = binomial(),
-                           alpha = 1, nfolds = 5); coef(cvfit, s = "lambda.min")
+# cvfit <- glmnet::cv.glmnet(x = as.matrix(dat_slice[, !grepl("event", colnames(dat_slice))]),
+#                            y = as.matrix(dat_slice[,"event"]), family = binomial(),
+#                            alpha = 1, nfolds = 5); coef(cvfit, s = "lambda.min")
 
 trim <- .995
 folds <- 5
@@ -67,12 +67,16 @@ lrn_rf <- Lrnr_randomForest$new()
 lrn_lasso <- Lrnr_glmnet$new(alpha = 1, stratify_cv = TRUE)
 lrn_glm <- Lrnr_glm$new()
 lrn_mean <- Lrnr_mean$new()
+lrn_bart <- Lrnr_bartMachine$new()
+lrn_earth <- Lrnr_earth$new()
+lrn_rpart <- Lrnr_rpart$new()
 
 learners_simple <- unlist(list(
   # lrn_rf, 
   # lrn_glm,
-  lrn_lasso#,
-  # lrn_mean
+  # lrn_lasso#,
+  lrn_bart,
+  lrn_mean
 ), recursive = TRUE)
 
 lrnrs <- make_learner(Stack, learners_simple)
@@ -132,7 +136,7 @@ progressr::with_progress(
       cens = censoring,
       shift = mtp,
       outcome_type = "survival",
-      # learners_outcome = lrnrs,
+      learners_outcome = lrnrs,
       learners_trt = lrnrs,
       folds = folds,
       .SL_folds = SL_folds,
