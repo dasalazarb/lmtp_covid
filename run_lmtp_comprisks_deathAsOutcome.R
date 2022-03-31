@@ -65,7 +65,8 @@ k <- 2
 
 lrn_rf <- Lrnr_randomForest$new()
 lrn_glmfast <- Lrnr_glm_fast$new()
-lrn_lasso <- Lrnr_glmnet$new(alpha = 1, stratify_cv = TRUE)
+# lrn_lasso <- Lrnr_glmnet$new(alpha = 1, stratify_cv = TRUE)
+lrn_lasso <- Lrnr_glmnet$new(alpha = 1)
 lrn_glm <- Lrnr_glm$new(stratify_cv = TRUE)
 lrn_mean <- Lrnr_mean$new()
 lrn_bart <- Lrnr_bartMachine$new()
@@ -78,15 +79,15 @@ lrn_enet <- Lrnr_glmnet$new(alpha = 0.5)
 learners_simple <- unlist(list(
   # lrn_rf, 
   # lrn_glm,
-  # lrn_lasso#,
-  lrnr_lgb,
-  lrn_mean
+  lrn_lasso#,
+  # lrnr_lgb,
+  # lrn_mean
 ), recursive = TRUE)
 
 lrnrs <- make_learner(Stack, learners_simple)
 
 # set parameters of outcome, trt, and adjustment vars
-outcome_day <- 14
+outcome_day <- 13
 padded_days <- str_pad(0:(outcome_day-1), 2, pad = "0")
 padded_days_out <- str_pad(1:outcome_day, 2, pad = "0")
 
@@ -149,6 +150,7 @@ progressr::with_progress(
       intervention_type = "mtp"
     )
 )
+
 # out_mtp
 
 # ### Without mpt
@@ -175,3 +177,9 @@ progressr::with_progress(
 # )
 # out_NULL
 # 
+ggsurvplot(
+  fit = survfit(Surv(fu, event) ~ 1, data = dat_lmtp %>% filter(fu <= 13)), 
+  xlab = "Days", 
+  ylab = "Overall survival probability",risk.table = "nrisk_cumevents", break.time.by = 2)
+fu_ <- dat_lmtp %>% filter(fu <= 28)
+table(fu_$fu, fu_$event)
