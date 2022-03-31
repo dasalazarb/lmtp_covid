@@ -17,7 +17,7 @@ set.seed(7)
 # plan(multicore)
 
 dat_lmtp <- read_rds(here::here("data/derived/dat_final_deathAsOutcome.rds")) %>%
-  filter(hypoxia_ed == 1) %>% # our cohort is only people who were hypoxic initially
+  # filter(hypoxia_ed == 1) %>% # our cohort is only people who were hypoxic initially
   mutate(I_00 = ifelse(I_00 == 0, 1, I_00)) %>% 
   replace(is.na(.), 0) %>% 
   select(-ckd_or_esrd, -hypoxia_ed, ## 1 class
@@ -87,7 +87,7 @@ learners_simple <- unlist(list(
 lrnrs <- make_learner(Stack, learners_simple)
 
 # set parameters of outcome, trt, and adjustment vars
-outcome_day <- 13
+outcome_day <- 12
 padded_days <- str_pad(0:(outcome_day-1), 2, pad = "0")
 padded_days_out <- str_pad(1:outcome_day, 2, pad = "0")
 
