@@ -22,8 +22,8 @@ outcomes <-
   # add days from hospitalization to death
   dplyr::mutate(
          # add in AKI time to the end date (should be before death)
-         days_to_death_discharge = ceiling(time_length(difftime(end_dt, ed_adm_dt), unit="day")),
-         event_death_28d_from_hosp = case_when(days_to_death_discharge <= 28 & death == "Yes" ~ 1,
+         days_to_death_or_discharge = ceiling(time_length(difftime(end_dt, ed_adm_dt), unit="day")),
+         event_death_28d_from_hosp = case_when(days_to_death_or_discharge <= 28 & death == "Yes" ~ 1,
                                              TRUE ~ 0)
          ) %>% 
   dplyr::select(id = empi,
