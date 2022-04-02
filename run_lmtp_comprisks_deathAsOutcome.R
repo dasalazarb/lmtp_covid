@@ -17,7 +17,6 @@ set.seed(7)
 # plan(multicore)
 
 dat_lmtp <- read_rds(here::here("data/derived/dat_final_deathAsOutcome.rds")) %>%
-  # filter(hypoxia_ed == 1) %>% # our cohort is only people who were hypoxic initially
   mutate(I_00 = ifelse(I_00 == 0, 1, I_00)) %>% 
   replace(is.na(.), 0) %>% 
   select(-ckd_or_esrd, -hypoxia_ed, ## 1 class
@@ -28,7 +27,6 @@ dat_lmtp <- read_rds(here::here("data/derived/dat_final_deathAsOutcome.rds")) %>
          -cirrhosis,
          -smoking_active_smoker, -hypoxia_ed_method_venti_mask, -hypoxia_ed_method_niv_bipap_cpap, 
          -hypoxia_ed_method_high_flow_nasal_cannula); dim(dat_lmtp) 
-
 
 # dat_slice <- cbind(dat_lmtp[,c(bs,"event")], dat_lmtp[,tv[[1]]])
 # dat_slice.2 <- dat_slice %>%
@@ -59,8 +57,8 @@ dat_lmtp <- read_rds(here::here("data/derived/dat_final_deathAsOutcome.rds")) %>
 #                            alpha = 1, nfolds = 5); coef(cvfit, s = "lambda.min")
 
 trim <- .995
-folds <- 5
-SL_folds <- 5
+folds <- 10
+SL_folds <- 10
 k <- 2
 
 lrn_rf <- Lrnr_randomForest$new()
@@ -87,7 +85,7 @@ learners_simple <- unlist(list(
 lrnrs <- make_learner(Stack, learners_simple)
 
 # set parameters of outcome, trt, and adjustment vars
-outcome_day <- 12
+outcome_day <- 14
 padded_days <- str_pad(0:(outcome_day-1), 2, pad = "0")
 padded_days_out <- str_pad(1:outcome_day, 2, pad = "0")
 

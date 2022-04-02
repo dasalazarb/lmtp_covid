@@ -18,9 +18,9 @@ dialysis <- dialysis.1 %>%
   filter(str_detect(tolower(procedure_description), "dialysis")) %>% 
   select(empi, procedure_description, procedure_dt_tm) %>% 
   filter(as.Date(procedure_dt_tm) >= "2020-03-03") %>% 
-  group_by(empi) %>%
-  slice_min(procedure_dt_tm) %>%
-  ungroup() %>%
+  group_by(empi) %>% 
+  slice_min(procedure_dt_tm) %>% 
+  ungroup() %>% 
   mutate(procedure_description = "dialysis") %>% 
   distinct()
 
@@ -57,7 +57,7 @@ outcomes <-
          cr = event_death_28d_from_hosp) %>%
   filter(fu > 0) # note that final cohort is 3,300
 
-max_fu_day <- 28
+max_fu_day <- 14
 intubation <-
   outcomes %>%
   select(id, fu, event, cr) %>%
