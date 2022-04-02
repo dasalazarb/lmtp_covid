@@ -69,17 +69,17 @@ lrn_glm <- Lrnr_glm$new(stratify_cv = TRUE)
 lrn_mean <- Lrnr_mean$new()
 lrn_bart <- Lrnr_bartMachine$new()
 lrn_earth <- Lrnr_earth$new(stratify_cv = TRUE)
-lrn_rpart <- Lrnr_rpart$new()
+lrn_rpart <- Lrnr_rpart$new(stratify_cv = TRUE)
 lrnr_lgb <- Lrnr_lightgbm$new()
 lrn_ridge <- Lrnr_glmnet$new(alpha = 0)
 lrn_enet <- Lrnr_glmnet$new(alpha = 0.5)
 
 learners_simple <- unlist(list(
-  # lrn_earth, 
+  lrn_earth, 
   # lrn_glm,
-  lrn_lasso#,
+  lrn_rpart,
   # lrnr_lgb,
-  # lrn_mean
+  lrn_mean
 ), recursive = TRUE)
 
 lrnrs <- make_learner(Stack, learners_simple)
@@ -97,7 +97,6 @@ bs <- dat_lmtp %>% # baseline covariates
          -starts_with("I_"), -starts_with("CR_"),
          -starts_with("H_")) %>% names()
 y <- paste0("Y_",padded_days_out) # outcome (AKI)
-# cr <- paste0("CR_",padded_days_out) # competing risk (death)
 censoring <- paste0("C_",padded_days) # observed at next time
 
 used_letters <- dat_lmtp %>% # letters for time varying
@@ -140,7 +139,7 @@ progressr::with_progress(
       shift = mtp,
       outcome_type = "survival",
       learners_outcome = lrnrs,
-      # learners_trt = lrnrs,
+      learners_trt = lrnrs,
       folds = folds,
       .SL_folds = SL_folds,
       # .trim = trim,
@@ -182,10 +181,10 @@ ggsurvplot(
 fu_ <- dat_lmtp %>% filter(fu <= 28)
 table(fu_$fu, fu_$event)
 
-write.csv(x = dat_lmtp %>% 
-  select(fu, event, starts_with("C_")) %>% 
-  group_by(fu) %>% 
-  arrange(fu, event) %>% 
-  ungroup() %>% 
-  distinct() %>% 
-  filter(fu >=2), file = "review_C_.csv")
+# write.csv(x = dat_lmtp %>% 
+#   select(fu, event, starts_with("C_")) %>% 
+#   group_by(fu) %>% 
+#   arrange(fu, event) %>% 
+#   ungroup() %>% 
+#   distinct() %>% 
+#   filter(fu >=2), file = "review_C_.csv")
