@@ -20,11 +20,11 @@ dat_lmtp <- read_rds(here::here("data/derived/dat_final_deathAsOutcome.rds")) %>
   mutate(I_00 = ifelse(I_00 == 0, 1, I_00)) %>% 
   replace(is.na(.), 0) %>% 
   select(-ckd_or_esrd, -hypoxia_ed, ## 1 class
-         -ild, -hiv, ## few observation in one class
+         # -ild, -hiv, ## few observation in one class
          -hypoxia_ed_method_na, -hypoxia_ed_method_none, ## few obs in one class
          -ethnicity_missing, ##ethnicity_missing == ethnicity_miss
          ## checking these ones:
-         -cirrhosis,
+         # -cirrhosis,
          -smoking_active_smoker, -hypoxia_ed_method_venti_mask, -hypoxia_ed_method_niv_bipap_cpap, 
          -hypoxia_ed_method_high_flow_nasal_cannula); dim(dat_lmtp) 
 
@@ -68,14 +68,14 @@ lrn_lasso <- Lrnr_glmnet$new(alpha = 1)
 lrn_glm <- Lrnr_glm$new(stratify_cv = TRUE)
 lrn_mean <- Lrnr_mean$new()
 lrn_bart <- Lrnr_bartMachine$new()
-lrn_earth <- Lrnr_earth$new()
+lrn_earth <- Lrnr_earth$new(stratify_cv = TRUE)
 lrn_rpart <- Lrnr_rpart$new()
 lrnr_lgb <- Lrnr_lightgbm$new()
 lrn_ridge <- Lrnr_glmnet$new(alpha = 0)
 lrn_enet <- Lrnr_glmnet$new(alpha = 0.5)
 
 learners_simple <- unlist(list(
-  # lrn_rf, 
+  # lrn_earth, 
   # lrn_glm,
   lrn_lasso#,
   # lrnr_lgb,
@@ -140,7 +140,7 @@ progressr::with_progress(
       shift = mtp,
       outcome_type = "survival",
       learners_outcome = lrnrs,
-      learners_trt = lrnrs,
+      # learners_trt = lrnrs,
       folds = folds,
       .SL_folds = SL_folds,
       # .trim = trim,
@@ -181,3 +181,11 @@ ggsurvplot(
   ylab = "Overall survival probability",risk.table = "nrisk_cumevents", break.time.by = 2)
 fu_ <- dat_lmtp %>% filter(fu <= 28)
 table(fu_$fu, fu_$event)
+
+write.csv(x = dat_lmtp %>% 
+  select(fu, event, starts_with("C_")) %>% 
+  group_by(fu) %>% 
+  arrange(fu, event) %>% 
+  ungroup() %>% 
+  distinct() %>% 
+  filter(fu >=2), file = "review_C_.csv")
