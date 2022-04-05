@@ -5,9 +5,11 @@ options(java.parameters = "-Xmx20000m")
 
 library(sl3)
 library(lmtp)
-library(tidyverse)
-library(future)
 library(earth)
+library(future)
+library(survival)
+library(survminer)
+library(tidyverse)
 
 progressr::handlers(global = TRUE)
 set.seed(7)
@@ -75,11 +77,11 @@ lrn_ridge <- Lrnr_glmnet$new(alpha = 0)
 lrn_enet <- Lrnr_glmnet$new(alpha = 0.5)
 
 learners_simple <- unlist(list(
-  lrn_earth, 
-  # lrn_glm,
-  lrn_rpart,
+  # lrn_earth, 
+  lrn_lasso#,
+  # lrn_rpart,
   # lrnr_lgb,
-  lrn_mean
+  # lrn_mean
 ), recursive = TRUE)
 
 lrnrs <- make_learner(Stack, learners_simple)
@@ -150,35 +152,37 @@ progressr::with_progress(
 
 # out_mtp
 
-# ### Without mpt
-# progressr::with_progress(
-#   out_NULL <-
-#     lmtp_sdr(
-#       dat_lmtp,
-#       trt = a,
-#       outcome = y,
-#       # comp_risk = cr,
-#       baseline = bs,
-#       time_vary = tv,
-#       cens = censoring,
-#       shift = NULL,
-#       outcome_type = "survival",
-#       learners_outcome = lrnrs,
-#       learners_trt = lrnrs,
-#       folds = folds,
-#       .SL_folds = SL_folds,
-#       # .trim = trim,
-#       k=k,
-#       intervention_type = "mtp"
-#     )
-# )
+### Without mpt
+progressr::with_progress(
+  out_NULL <-
+    lmtp_sdr(
+      dat_lmtp,
+      trt = a,
+      outcome = y,
+      # comp_risk = cr,
+      baseline = bs,
+      time_vary = tv,
+      cens = censoring,
+      shift = NULL,
+      outcome_type = "survival",
+      learners_outcome = lrnrs,
+      learners_trt = lrnrs,
+      folds = folds,
+      .SL_folds = SL_folds,
+      # .trim = trim,
+      k=k,
+      intervention_type = "mtp"
+    )
+)
 # out_NULL
 # 
 ggsurvplot(
-  fit = survfit(Surv(fu, event) ~ 1, data = dat_lmtp %>% filter(fu <= 13)), 
+  fit = survfit(Surv(fu, event) ~ 1, 
+                data = dat_lmtp %>% mutate(fu = ifelse(fu >=15, 15, fu))), 
   xlab = "Days", 
-  ylab = "Overall survival probability",risk.table = "nrisk_cumevents", break.time.by = 2)
-fu_ <- dat_lmtp %>% filter(fu <= 28)
+  ylab = "Overall survival probability",
+  risk.table = TRUE, break.time.by = 1)
+fu_ <- dat_lmtp %>% filter(fu <= 15)
 table(fu_$fu, fu_$event)
 
 # write.csv(x = dat_lmtp %>% 
