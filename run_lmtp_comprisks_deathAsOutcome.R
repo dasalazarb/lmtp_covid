@@ -127,7 +127,7 @@ mtp <- function(data, trt) {
   return(data[[trt]])
 }
 
-trace(lmtp_sdr)
+
 
 ### With mpt
 # progressr::with_progress(
@@ -143,7 +143,7 @@ trace(lmtp_sdr)
       shift = mtp,
       outcome_type = "survival",
       learners_outcome = lrnrs,
-      learners_trt = lrnrs,
+      # learners_trt = lrnrs,
       folds = folds,
       .SL_folds = SL_folds,
       # .trim = trim,
@@ -168,7 +168,7 @@ progressr::with_progress(
       shift = NULL,
       outcome_type = "survival",
       learners_outcome = lrnrs,
-      learners_trt = lrnrs,
+      # learners_trt = lrnrs,
       folds = folds,
       .SL_folds = SL_folds,
       # .trim = trim,
