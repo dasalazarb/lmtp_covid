@@ -127,8 +127,10 @@ mtp <- function(data, trt) {
   return(data[[trt]])
 }
 
+trace(lmtp_sdr)
+
 ### With mpt
-progressr::with_progress(
+# progressr::with_progress(
   out_mtp <-
     lmtp_sdr(
       dat_lmtp,
@@ -148,13 +150,13 @@ progressr::with_progress(
       k=k,
       intervention_type = "mtp"
     )
-)
+# )
 
 # out_mtp
 
 ### Without mpt
 progressr::with_progress(
-  out_NULL <-
+  debug(out_NULL <-
     lmtp_sdr(
       dat_lmtp,
       trt = a,
@@ -172,7 +174,7 @@ progressr::with_progress(
       # .trim = trim,
       k=k,
       intervention_type = "mtp"
-    )
+    ))
 )
 # out_NULL
 # 
