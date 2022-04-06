@@ -37,7 +37,7 @@ dat_lmtp <- read_rds(here::here("data/derived/dat_final_deathAsOutcome.rds")) %>
 #             distinct(), "review_mydata.csv")
 
 trim <- .995
-folds <- 10
+folds <- 3
 SL_folds <- 10
 k <- 2
 
@@ -130,46 +130,3 @@ progressr::with_progress(
       intervention_type = "mtp"
     )
 )
-
-# out_mtp
-
-# ### Without mpt
-# progressr::with_progress(
-#   debug(out_NULL <-
-#     lmtp_sdr(
-#       dat_lmtp,
-#       trt = a,
-#       outcome = y,
-#       # comp_risk = cr,
-#       baseline = bs,
-#       time_vary = tv,
-#       cens = censoring,
-#       shift = NULL,
-#       outcome_type = "survival",
-#       learners_outcome = lrnrs,
-#       # learners_trt = lrnrs,
-#       folds = folds,
-#       .SL_folds = SL_folds,
-#       # .trim = trim,
-#       k=k,
-#       intervention_type = "mtp"
-#     ))
-# )
-# # out_NULL
-# # 
-# ggsurvplot(
-#   fit = survfit(Surv(fu, event) ~ 1, 
-#                 data = dat_lmtp %>% mutate(fu = ifelse(fu >=15, 15, fu))), 
-#   xlab = "Days", 
-#   ylab = "Overall survival probability",
-#   risk.table = TRUE, break.time.by = 1)
-# fu_ <- dat_lmtp %>% filter(fu <= 15)
-# table(fu_$fu, fu_$event)
-
-# write.csv(x = dat_lmtp %>% 
-#   select(fu, event, starts_with("C_")) %>% 
-#   group_by(fu) %>% 
-#   arrange(fu, event) %>% 
-#   ungroup() %>% 
-#   distinct() %>% 
-#   filter(fu >=2), file = "review_C_.csv")
