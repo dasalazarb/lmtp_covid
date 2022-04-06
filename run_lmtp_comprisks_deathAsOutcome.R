@@ -56,7 +56,8 @@ lrn_enet <- Lrnr_glmnet$new(alpha = 0.5)
 
 learners_simple <- unlist(list(
   # lrn_earth, 
-  lrn_lasso#,
+  lrn_lasso,
+  lrn_ridge
   # lrn_rpart,
   # lrnr_lgb,
   # lrn_mean
