@@ -27,7 +27,7 @@ outcomes <-
                                              TRUE ~ 0)
          ) %>% 
   dplyr::select(id = empi,
-         fu = days_to_death_discharge,
+         fu = days_to_death_or_discharge,
          event = event_death_28d_from_hosp) %>%
   filter(fu > 0) # note that final cohort is 3,300
 outcomes
@@ -94,7 +94,7 @@ outcome <-
               values_from = Y, 
               names_prefix = "Y_", 
               values_fill = 0) %>% 
-  replace(is.na(.), 0) %>% 
+  # replace(is.na(.), 0) %>% 
   ungroup()
 outcome
 
@@ -120,10 +120,9 @@ for (i in 0:26){
     dat_final %>%
     mutate(across(all_of(vars_for_na), ~case_when(.data[[paste0("C_", ip)]] == 0 ~ NA_real_,
                                           .data[[paste0("Y_", ip1)]] == 1 ~ NA_real_,
-                                          # .data[[paste0("CR_", ip1)]] == 1 ~ NA_real_,
                                           TRUE ~ .x))) 
 }
 
 saveRDS(dat_final, "data/derived/dat_final_deathAsOutcome.rds")
 
-
+write.csv(dat_final %>% select_if(function(x) any(is.na(x))), "review_Y_L.csv")

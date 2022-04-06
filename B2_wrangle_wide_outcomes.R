@@ -44,7 +44,7 @@ outcomes <-
          cr = event_death_28d_from_hosp) %>%
   filter(fu > 0) # note that final cohort is 3,300
 
-
+max_fu_day <- 28
 intubation <-
   outcomes %>%
   select(id, fu, event, cr) %>%
@@ -58,7 +58,7 @@ intubation <-
   pivot_wider(id_cols = c("id","fu"), 
               names_from = day,
               values_from = I, 
-              names_prefix = "I_") 
+              names_prefix = "I_")
 
 max_fu_day <- 28
 padded_days <- str_pad(0:(max_fu_day-1),2,pad="0")
