@@ -41,23 +41,24 @@ folds <- 20
 SL_folds <- 20
 k <- 2
 
-lrn_rf <- Lrnr_randomForest$new()
-lrn_glmfast <- Lrnr_glm_fast$new()
-# lrn_lasso <- Lrnr_glmnet$new(alpha = 1, stratify_cv = TRUE)
-lrn_lasso <- Lrnr_glmnet$new(alpha = 1)
-lrn_glm <- Lrnr_glm$new(stratify_cv = TRUE)
-lrn_mean <- Lrnr_mean$new()
-lrn_bart <- Lrnr_bartMachine$new()
-lrn_earth <- Lrnr_earth$new(stratify_cv = TRUE)
-lrn_rpart <- Lrnr_rpart$new(stratify_cv = TRUE)
-lrnr_lgb <- Lrnr_lightgbm$new()
-lrn_ridge <- Lrnr_glmnet$new(alpha = 0)
-lrn_enet <- Lrnr_glmnet$new(alpha = 0.5)
+# lrn_rf <- Lrnr_randomForest$new()
+# lrn_glmfast <- Lrnr_glm_fast$new()
+# # lrn_lasso <- Lrnr_glmnet$new(alpha = 1, stratify_cv = TRUE)
+# lrn_glm <- Lrnr_glm$new(stratify_cv = TRUE)
+# lrn_mean <- Lrnr_mean$new()
+# lrn_bart <- Lrnr_bartMachine$new()
+# lrn_earth <- Lrnr_earth$new(stratify_cv = TRUE)
+# lrn_rpart <- Lrnr_rpart$new(stratify_cv = TRUE)
+# lrnr_lgb <- Lrnr_lightgbm$new()
+lrn_lasso <- Lrnr_glmnet$new(alpha = 1, stratify_cv = TRUE)
+lrn_ridge <- Lrnr_glmnet$new(alpha = 0, stratify_cv = TRUE)
+lrn_enet <- Lrnr_glmnet$new(alpha = 0.5, stratify_cv = TRUE)
 
 learners_simple <- unlist(list(
   # lrn_earth, 
   lrn_lasso,
-  lrn_ridge
+  lrn_ridge,
+  lrn_enet
   # lrn_rpart,
   # lrnr_lgb,
   # lrn_mean
@@ -106,8 +107,6 @@ mtp <- function(data, trt) {
   return(data[[trt]])
 }
 
-
-
 ### With mpt
 progressr::with_progress(
   out_mtp <-
@@ -122,7 +121,7 @@ progressr::with_progress(
       shift = mtp,
       outcome_type = "survival",
       learners_outcome = lrnrs,
-      # learners_trt = lrnrs,
+      learners_trt = lrnrs,
       folds = folds,
       .SL_folds = SL_folds,
       # .trim = trim,
@@ -131,4 +130,25 @@ progressr::with_progress(
     )
 )
 
-### end
+### With mpt
+progressr::with_progress(
+  out_NULL <-
+    lmtp_sdr(
+      dat_lmtp,
+      trt = a,
+      outcome = y,
+      # comp_risk = cr,
+      baseline = bs,
+      time_vary = tv,
+      cens = censoring,
+      shift = NULL,
+      outcome_type = "survival",
+      learners_outcome = lrnrs,
+      learners_trt = lrnrs,
+      folds = folds,
+      .SL_folds = SL_folds,
+      # .trim = trim,
+      k=k,
+      intervention_type = "mtp"
+    )
+)
