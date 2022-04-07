@@ -37,8 +37,8 @@ dat_lmtp <- read_rds(here::here("data/derived/dat_final_deathAsOutcome.rds")) %>
 #             distinct(), "review_mydata.csv")
 
 trim <- .995
-folds <- 10
-SL_folds <- 10
+folds <- 20
+SL_folds <- 20
 k <- 2
 
 lrn_rf <- Lrnr_randomForest$new()
