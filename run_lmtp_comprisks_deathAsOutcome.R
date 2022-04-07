@@ -37,7 +37,7 @@ dat_lmtp <- read_rds(here::here("data/derived/dat_final_deathAsOutcome.rds")) %>
 #             distinct(), "review_mydata.csv")
 
 trim <- .995
-folds <- 3
+folds <- 10
 SL_folds <- 10
 k <- 2
 
@@ -130,3 +130,5 @@ progressr::with_progress(
       intervention_type = "mtp"
     )
 )
+
+### end

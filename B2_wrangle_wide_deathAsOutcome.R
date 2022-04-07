@@ -118,7 +118,7 @@ for (i in 0:26){
     names()
   dat_final <-
     dat_final %>%
-    mutate(across(all_of(vars_for_na), ~case_when(.data[[paste0("C_", ip)]] == 0 ~ NA_real_,
+    mutate(across(all_of(vars_for_na), ~ case_when(.data[[paste0("C_", ip)]] == 0 ~ NA_real_,
                                           .data[[paste0("Y_", ip1)]] == 1 ~ NA_real_,
                                           TRUE ~ .x))) 
 }
