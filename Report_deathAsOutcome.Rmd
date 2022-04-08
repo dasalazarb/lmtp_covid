@@ -1,0 +1,162 @@
+---
+title: "Project Name"
+author: "Author Name"
+pi: "PI name"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+footer_message: "Message to follow your name in footer."
+# runtime: shiny
+output: 
+  wcmtheme::wcm_html: 
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(dplyr)
+library(dplyr)
+library(readr)
+library(survival)
+library(survminer)
+library(gtsummary)
+```
+
+> Inspired by the better poster, try including a take-home message about the report.
+
+# Scientific question
+
+What is the effect of invasive mechanical ventilation (IMV) on overall survival among COVID-19 patients?
+
+# Study design
+
+![Visual description of the study design. (A) For 3323 COVID-19 positive patients, records were used for 14 days, starting from the day of hospitalization. Time-dependent variables are L, A, C and Y; they were recorded daily. While the baseline variables (Bs) were recorded only once. (B) The two contrasting scenarios correspond to subjects exposed to some type of oxygen supplementation or none at all. On the other hand, the modified treatment policy is a more conservative strategy that avoids the provision of IMV. In both scenarios, the outcome corresponds to death.](G:/Mi%20unidad/Tutorial_2018-10/03_Resultados/DataTCGA/LMTP_COVID/lmtp_covid/figures/results_design.jpg)
+
+# Results
+
+```{r echo=FALSE}
+# knitr::kable(head(iris))
+dat_lmtp <- read_rds(here::here("C:/Users/da.salazarb/Documents/data/derived/dat_final_deathAsOutcome.rds")) %>%
+  mutate(I_00 = ifelse(I_00 == 0, 1, I_00)) %>% 
+  # replace(is.na(.), 0) %>% 
+  select(-ckd_or_esrd, #-hypoxia_ed, ## 1 class
+         # -ild, -hiv, ## few observation in one class
+         #-hypoxia_ed_method_na, -hypoxia_ed_method_none, ## few obs in one class
+         -ethnicity_missing, -race_missing, -hypoxia_ed) ##ethnicity_missing == ethnicity_miss
+         ## checking these ones:
+         # -cirrhosis,
+         #-smoking_active_smoker, -hypoxia_ed_method_venti_mask,
+         #-hypoxia_ed_method_niv_bipap_cpap, 
+         #-hypoxia_ed_method_high_flow_nasal_cannula)#; dim(dat_lmtp)
+```
+
+## Data description
+
+The following graphs and tables are presented below:
+
+**Summary**: summary of baseline variables separated by patients who presented the event and those who did not in the 14-day period.
+
+**Kaplan-Meier plot**
+
+## 
+
+# Tabset {.tabset}
+
+## Summary
+
+Lorem ipsum dolor sit amet, et prima verterem sit. His latine alienum te, quo legere maiorum prodesset et. Qui suas oratio consequuntur ne, qui prima bonorum ut. Eu nec ponderum consetetur, eu possit dissentias intellegebat usu. Amet saperet consectetuer nam ea, mutat ullum nihil ut sea.
+
+```{r}
+tbl <- dat_lmtp %>% 
+  select( -fu, -starts_with("C_"), -starts_with("Y_"), -starts_with("I_"), -starts_with("L_"), -starts_with("A_")) %>% 
+  tidyr::gather(key="Race", value = "value_race", race_asian, race_black, race_other, race_white, race_miss) %>%
+  filter(value_race != 0) %>%
+  tidyr::gather(key="Ethnicity", value = "value_ethcnicity", ethnicity_hispanic_or_latino_or_spanish_origin,
+                ethnicity_not_hispanic_or_latino_or_spanish_origin, ethnicity_miss) %>% 
+  filter(value_ethcnicity != 0) %>% 
+  tidyr::gather(key="Hypoxia", value = "value_hypoxia", hypoxia_ed_method_mechanical_ventilation, hypoxia_ed_method_nasal_cannula,
+                hypoxia_ed_method_non_rebreather, hypoxia_ed_method_high_flow_nasal_cannula, hypoxia_ed_method_niv_bipap_cpap, 
+                hypoxia_ed_method_none, hypoxia_ed_method_venti_mask, hypoxia_ed_method_na) %>% 
+  filter(value_hypoxia != 0) %>% 
+  tidyr::gather(key="Smoking", value = "value_smoker", smoking_former_smoker, smoking_no, smoking_active_smoker) %>% 
+  filter(value_smoker != 0) %>% 
+  # mutate(home_o2 = home_o2_yn + (home_o2_miss * 2)) %>% 
+  # tidyr::gather(key="home_o2", value = "value_home_o2", home_o2_yn, home_o2_miss) %>% 
+  # filter(home_o2 != 0) %>% 
+  select(-value_race, -value_ethcnicity, -value_hypoxia, -value_smoker, -home_o2_miss) %>% 
+  mutate(Race = case_when(Race == "race_asian" ~ "Asian", 
+                          Race == "race_black" ~ "Black", 
+                          Race == "race_white" ~ "White", 
+                          Race == "race_other" ~ "Other", 
+                          Race == "race_miss" ~ "Missing value"),
+         Ethnicity = case_when(Ethnicity == "ethnicity_hispanic_or_latino_or_spanish_origin" ~ "Hispanic/Latino/Spanish", 
+                               Ethnicity == "ethnicity_not_hispanic_or_latino_or_spanish_origin" ~ "No Hispanic/Latino/Spanish", 
+                               Ethnicity == "ethnicity_miss" ~ "Missing value"), 
+         Hypoxia = case_when(Hypoxia == "hypoxia_ed_method_mechanical_ventilation" ~ "Mechanical ventilation", 
+                             Hypoxia == "hypoxia_ed_method_nasal_cannula" ~ "Nasal cannula",
+                             Hypoxia == "hypoxia_ed_method_non_rebreather" ~ "Non rebreather", 
+                             Hypoxia == "hypoxia_ed_method_high_flow_nasal_cannula" ~ "High flow nasal cannula", 
+                             Hypoxia == "hypoxia_ed_method_niv_bipap_cpap" ~ "Niv bivap cpap", 
+                             Hypoxia == "hypoxia_ed_method_venti_mask" ~ "Venti mask", 
+                             Hypoxia == "hypoxia_ed_method_none" ~ "None"), 
+         Smoking = case_when(Smoking == "smoking_former_smoker" ~ "Former smoker", 
+                             Smoking == "smoking_active_smoker" ~ "Active smoker",
+                             Smoking == "smoking_no" ~ "No smoker"), 
+         home_o2_yn = case_when(home_o2_yn == 0 ~ "No home o2", 
+                             home_o2_yn == 1 ~ "Home o2"), 
+         event = case_when(event == 0 ~ "No death", 
+                           event == 1 ~ "Death"), 
+         sex = case_when(sex == 1 ~ "Male", 
+                         sex == 0 ~ "Female")
+         ) %>% 
+  select(-id, Event = event, red_cap_source, Age = age, Sex = sex, bmi, cad, Hypertension = htn, active_cancer, dm, copd, ild, hiv,
+         cva, Cirrhosis = cirrhosis, Asthma = asthma, Immunosuppression = immunosuppressed, Race, Ethnicity, Hypoxia, Smoking, home_o2_yn, -bmi_miss)
+
+tbl %>% 
+  tbl_summary(by = Event, 
+              label = list(bmi ~ "Body mass index", 
+                           home_o2_yn ~ "Home oxygen status", 
+                           dm ~ "Diabetes mellitus", 
+                           cad ~ "Coronary Artery Disease", 
+                           copd ~ "Chronic Obstructive Pulmonary Disease", 
+                           active_cancer ~ "Active cancer", 
+                           ild ~ "Interstitial Lung Disease", 
+                           hiv ~ "HIV infection")) %>% 
+  add_p() %>%
+  bold_labels() %>%
+  add_overall() %>%
+  # add_n() %>%
+  modify_header(label ~ "**Variable**") %>%
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**Outcome**")
+```
+
+## Kaplan-Meier plot
+
+Lorem ipsum dolor sit amet, quem deseruisse ut mea, mea et malorum deserunt. Eu est adipisci rationibus. An eos audiam adipiscing. Quot sale sea ei.
+
+```{r}
+ggsurvplot(
+  fit = survfit(Surv(fu, event) ~ 1,
+                data = dat_lmtp %>% 
+                  mutate(event = ifelse(fu > 14, 0, event), fu = ifelse(fu >14, 14, fu)) %>% 
+                  select(fu, event)),
+  xlab = "Days", 
+  ylab = "Overall survival probability",
+  risk.table = TRUE, risk.table.fontsize = 3, 
+  break.time.by = 1, xlim = c(0,14), ylim = c(0.5,1),
+  legend.labs =
+    c("Patients"), 
+  ggtheme = theme_light(
+    base_size = 12,
+    base_family = "",
+    base_line_size = 11/22,
+    base_rect_size = 11/22
+  ))
+```
+<!-- ## Table day i -->
+
+<!-- Hola Mundo -->
+
+<!-- ```{r} -->
+<!-- dat_lmtp %>% select(ends_with("_13")) %>% -->
+<!--   tbl_summary(by = "Y_13") -->
+<!-- ``` -->
