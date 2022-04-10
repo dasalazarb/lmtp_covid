@@ -152,3 +152,5 @@ progressr::with_progress(
       intervention_type = "mtp"
     )
 )
+saveRDS(object = out_mtp, file = "G:/Mi unidad/Tutorial_2018-10/10_WCM/covid/out_mtp.rds")
+saveRDS(object = out_NULL, file = "G:/Mi unidad/Tutorial_2018-10/10_WCM/covid/out_NULL.rds")
