@@ -56,8 +56,8 @@ lrn_enet <- Lrnr_glmnet$new(alpha = 0.5, stratify_cv = TRUE)
 
 learners_simple <- unlist(list(
   # lrn_earth, 
-  lrn_lasso,
-  lrn_ridge,
+  # lrn_lasso,
+  # lrn_ridge,
   lrn_enet
   # lrn_rpart,
   # lrnr_lgb,
