@@ -21,9 +21,9 @@ dat_full <-  readr::read_rds(here::here("data/derived/dat_full.rds"))
 
 outcomes <- 
   cohort %>% 
-  left_join(aki) %>%
+  left_join(aki) %>% 
   drop_na(max_aki_stage) %>% # missing data lake data
-  select(empi, ed_adm_dt, aki_time, max_aki_stage, end_dt, death) %>%
+  select(empi, ed_adm_dt, aki_time, max_aki_stage, end_dt, death) %>% 
   # add days from hospitalization to death
   mutate(event_aki = case_when(max_aki_stage > 0 & (aki_time %within% interval(ed_adm_dt, end_dt)) ~ 1,
                                     TRUE ~ 0),
@@ -37,7 +37,7 @@ outcomes <-
                                              TRUE ~ 0),
          # follow up time is censored at discharge
          days_to_aki_death_discharge_28d = case_when(days_to_aki_death_discharge <= 28 ~ days_to_aki_death_discharge,
-                                        TRUE ~ 28)) %>%
+                                        TRUE ~ 28)) %>% 
   select(id = empi,
          fu = days_to_aki_death_discharge,
          event = event_aki_28d_from_hosp,
