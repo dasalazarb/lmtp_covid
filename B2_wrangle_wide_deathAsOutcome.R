@@ -96,18 +96,15 @@ outcome <-
   ungroup()
 outcome
 
+## using the cens pattern to correct the intubation pattern
+intubation[,3:dim(intubation)[2]] <- (intubation[,3:dim(intubation)[2]] + 1) * cens[,2:dim(cens)[2]]
+
+intubation[,3:dim(intubation)[2]][intubation[,3:dim(intubation)[2]] == 0] <- NA
+
+intubation[,3:dim(intubation)[2]] <- intubation[,3:dim(intubation)[2]] - 1
+
 i <- sample(dim(outcome)[1],size = 1);outcomes[i,];outcome[i,1:15] %>% select(-event);cens[i,1:14];intubation[i,1:15] %>% select(-fu)
 
-for (i in 1:dim(outcome)[1]) {
-  if (sum(is.na(outcome[i,1:15] %>% select(-event))) == 0 & sum(is.na(intubation[i,1:15] %>% select(-fu))) > 0) {
-    print(outcomes[i,])
-    print(outcome[i,1:15] %>% select(-event))
-    print(cens[i,1:14])
-    print(intubation[i,1:15] %>% select(-fu))
-    print(comp_risk[i,1:15] %>% select(-fu))
-  }
-  
-}
 
 dat_final <- 
   outcomes %>% # contains fu, event, cr columns
