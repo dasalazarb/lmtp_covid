@@ -173,14 +173,14 @@ intubation[,3:dim(intubation)[2]] <- intubation[,3:dim(intubation)[2]] - 1
 # 
 # outcome[,3:dim(outcome)[2]] <- outcome[,3:dim(outcome)[2]] - 1
 
-## using the cens pattern to correct the comp_risk pattern
-comp_risk[,4:dim(comp_risk)[2]] <- (comp_risk[,4:dim(comp_risk)[2]] + 1) * cens[,2:dim(cens)[2]]
+# ## using the cens pattern to correct the comp_risk pattern
+# comp_risk[,4:dim(comp_risk)[2]] <- (comp_risk[,4:dim(comp_risk)[2]] + 1) * cens[,2:dim(cens)[2]]
+# 
+# comp_risk[,4:dim(comp_risk)[2]][comp_risk[,4:dim(comp_risk)[2]] == 0] <- NA
+# 
+# comp_risk[,4:dim(comp_risk)[2]] <- comp_risk[,4:dim(comp_risk)[2]] - 1
 
-comp_risk[,4:dim(comp_risk)[2]][comp_risk[,4:dim(comp_risk)[2]] == 0] <- NA
-
-comp_risk[,4:dim(comp_risk)[2]] <- comp_risk[,4:dim(comp_risk)[2]] - 1
-
-i <- sample(dim(outcome)[1],size = 1);outcomes[i,];outcome[i,1:15] %>% select(-event);cens[i,1:14];intubation[i,1:15] %>% select(-fu);comp_risk[i,1:16] %>% select(-fu, -event)
+i <- sample(which(outcome$event == 0),size = 1);outcomes[i,];outcome[i,1:15] %>% select(-event);cens[i,1:14];intubation[i,1:15] %>% select(-fu);comp_risk[i,1:16] %>% select(-fu, -event)
 
 
 dat_final <- 
