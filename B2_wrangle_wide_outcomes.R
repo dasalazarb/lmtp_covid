@@ -47,7 +47,7 @@ outcomes <-
 max_fu_day <- 28
 intubation <-
   outcomes %>%
-  select(id, fu, event, cr) %>%
+  select(id, fu, event, cr) %>% 
   left_join(events_day_with_steroids %>% select(id = empi, day, o2_status)) %>%
   filter(day <= fu, day < max_fu_day) %>%
   filter(!(day == fu & (event == 1 | cr == 1))) %>%
@@ -71,7 +71,7 @@ cens <-
   outcomes %>%
   group_by(id) %>%
   mutate(day = fu) %>%
-  complete(id, day = full_seq(1:day, 1)) %>%
+  complete(day = full_seq(1:day, 1)) %>%
   fill(fu, event, cr, .direction = "up") %>%
   mutate(C = case_when(event == 0 & cr == 0 & day == fu ~ 0, # we don't have data after patients are discharged, so back their censoring time up one day
                        TRUE ~ 1)) %>%
@@ -89,7 +89,7 @@ outcome <-
   outcomes %>%
   group_by(id) %>%
   mutate(day = 1) %>%
-  complete(id, day = full_seq(1:max_fu_day, 1)) %>%
+  complete(day = full_seq(1:max_fu_day, 1)) %>%
   fill(fu, event, cr, .direction = "downup") %>%
   mutate(
     Y = case_when(
@@ -112,7 +112,7 @@ comp_risk <-
   outcomes %>%
   group_by(id) %>%
   mutate(day = 1) %>%
-  complete(id, day = full_seq(1:max_fu_day, 1)) %>%
+  complete(day = full_seq(1:max_fu_day, 1)) %>%
   fill(fu, event, cr, .direction = "downup") %>%
   mutate(
     cr = case_when(
@@ -127,6 +127,18 @@ comp_risk <-
               names_prefix = "CR_") %>%
   ungroup()
 
+i <- sample(dim(outcome)[1],size = 1);outcomes[i,];outcome[i,1:15] %>% select(-event);cens[i,1:14];intubation[i,1:15] %>% select(-fu);comp_risk[i,1:15] %>% select(-fu)
+
+for (i in 1:dim(outcome)[1]) {
+  if (sum(is.na(outcome[i,1:15] %>% select(-event))) == 0 & sum(is.na(intubation[i,1:15] %>% select(-fu))) > 0) {
+    print(outcomes[i,])
+    print(outcome[i,1:15] %>% select(-event))
+    print(cens[i,1:14])
+    print(intubation[i,1:15] %>% select(-fu))
+    print(comp_risk[i,1:15] %>% select(-fu))
+  }
+  
+}
 
 dat_final <- 
   outcomes %>% # contains fu, event, cr columns

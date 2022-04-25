@@ -29,7 +29,8 @@ outcomes <-
   dplyr::select(id = empi,
          fu = days_to_death_or_discharge,
          event = event_death_28d_from_hosp) %>%
-  filter(fu > 0) # note that final cohort is 3,300
+  filter(fu > 0) %>% 
+  distinct(); dim(outcomes) # note that final cohort is 3,300
 outcomes
 
 max_fu_day <- 28
@@ -46,8 +47,7 @@ intubation <-
   pivot_wider(id_cols = c("id","fu"),
               names_from = day,
               values_from = I,
-              names_prefix = "I_",
-              values_fill = 0)
+              names_prefix = "I_")
 
 # max_fu_day <- 28
 padded_days <- str_pad(0:(max_fu_day-1),2,pad="0")
@@ -68,8 +68,7 @@ cens <-
   pivot_wider(id_cols = c("id"), 
               names_from = day, 
               values_from = C, 
-              names_prefix = "C_", 
-              values_fill = 0) %>% 
+              names_prefix = "C_") %>% 
   replace_na(replace_obs) %>% 
   ungroup() %>% 
   select(id, one_of(names(replace_obs)))
@@ -92,19 +91,29 @@ outcome <-
   pivot_wider(id_cols = c("id","event"), 
               names_from = day,
               values_from = Y, 
-              names_prefix = "Y_", 
-              values_fill = 0) %>% 
+              names_prefix = "Y_") %>% 
   # replace(is.na(.), 0) %>% 
   ungroup()
 outcome
 
+i <- sample(dim(outcome)[1],size = 1);outcomes[i,];outcome[i,1:15] %>% select(-event);cens[i,1:14];intubation[i,1:15] %>% select(-fu)
 
+for (i in 1:dim(outcome)[1]) {
+  if (sum(is.na(outcome[i,1:15] %>% select(-event))) == 0 & sum(is.na(intubation[i,1:15] %>% select(-fu))) > 0) {
+    print(outcomes[i,])
+    print(outcome[i,1:15] %>% select(-event))
+    print(cens[i,1:14])
+    print(intubation[i,1:15] %>% select(-fu))
+    print(comp_risk[i,1:15] %>% select(-fu))
+  }
+  
+}
 
 dat_final <- 
   outcomes %>% # contains fu, event, cr columns
   full_join(cens) %>% 
   full_join(outcome) %>% 
-  left_join(intubation) %>%
+  left_join(intubation) %>% 
   left_join(dat_full %>% rename(id = empi))
 
 

@@ -13,22 +13,29 @@ outcome_exposure <- read_rds(here::here("data/derived/outcome_exposure.rds"))%>%
 
 # aki <- read_rds(here::here("data/derived/kh_aki.rds"))
 dialysis.1 <- read_rds(here::here("data/raw/2020-08-17/covid_datalake_wcm_procedures.rds")); head(dialysis.1); dim(dialysis.1)
-dialysis.2 <- readxl::read_excel(here::here("data/raw/2020-08-17/RITM0529623_hoffman.xlsx")); head(dialysis.2); dim(dialysis.2)
+dialysis.2 <- readxl::read_excel(here::here("data/raw/2020-08-17/RITM0529623_hoffman.xlsx")) %>% 
+  mutate(procedure_description = "dialysis", procedure_dt_tm=as.Date(dialysis_date)) %>% 
+  select(-dialysis_date); head(dialysis.2); dim(dialysis.2)
+
+tz(dialysis.1$procedure_dt_tm) <- "America/New_York"
+tz(dialysis.2$procedure_dt_tm) <- "America/New_York"
 
 dialysis <- dialysis.2 %>% 
   mutate(empi=as.character(empi)) %>% 
-  left_join(dialysis.1, by = "empi") %>% 
-  filter(str_detect(tolower(procedure_description), "dialysis")) %>% 
-  select(empi, procedure_description, procedure_dt_tm, dialysis_date) %>% 
-  filter(as.Date(dialysis_date) >= "2020-03-03") %>% 
-  group_by(empi) %>%
-  slice_min(dialysis_date) %>%
-  ungroup() %>%
-  mutate(procedure_description = "dialysis") %>%
+  bind_rows(dialysis.1 %>% 
+              filter(str_detect(tolower(procedure_description), "dialysis")) %>% 
+              mutate(procedure_description = "dialysis") %>% 
+              select(empi, procedure_dt_tm, procedure_description) ) %>% 
+  # select(empi, procedure_description, dialysis_date) %>% 
+  filter(procedure_dt_tm >= "2020-03-03") %>% 
+  group_by(empi) %>% 
+  slice_min(procedure_dt_tm) %>% 
+  ungroup() %>% 
   distinct()
 head(dialysis, 5); dim(dialysis)
 
-tz(dialysis.1$procedure_dt_tm) <- "America/New_York"
+# tz(dialysis$procedure_dt_tm) <- "America/New_York"
+# tz(dialysis$dialysis_date) <- "America/New_York"
 
 events_day_with_steroids <- readr::read_rds(here::here("data/derived/events_day_w_steroids.rds")) %>%
   filter(empi %in% cohort$empi)
@@ -39,12 +46,12 @@ dat_full <-  readr::read_rds(here::here("data/derived/dat_full.rds"))
 outcomes <- 
   cohort %>% 
   left_join(dialysis, by="empi") %>% 
-  select(empi, ed_adm_dt, end_dt, dialysis_date, procedure_description, death) %>% 
+  select(empi, ed_adm_dt, end_dt, procedure_dt_tm, procedure_description, death) %>% 
   # add days from hospitalization to death
   mutate(event_dialysis = case_when(str_detect(tolower(procedure_description), "dialysis") ~ 1, 
                                     TRUE ~ 0), ## -> 14 event_dialysis
          # add in dialysis time to the end date (should be before death)
-         end_dt = pmin(end_dt, dialysis_date, na.rm=T),
+         end_dt = pmin(end_dt, procedure_dt_tm, na.rm=T),
          days_to_dialysis_death_discharge = ceiling(time_length(difftime(end_dt, ed_adm_dt), unit="day")),
          event_dialysis_28d_from_hosp = case_when(days_to_dialysis_death_discharge <= 28 & event_dialysis == 1 ~ 1,
                                                TRUE ~ 0),
@@ -57,9 +64,10 @@ outcomes <-
   select(id = empi,
          fu = days_to_dialysis_death_discharge,
          event = event_dialysis_28d_from_hosp,
-         cr = event_death_28d_from_hosp) %>%
+         cr = event_death_28d_from_hosp) %>% 
   filter(fu > 0) %>% 
-  distinct(); dim(outcomes) # note that final cohort is 3,300
+  distinct(); outcomes; dim(outcomes) # note that final cohort is 3,300
+table(outcomes$fu, outcomes$event)
 
 max_fu_day <- 28
 
@@ -101,15 +109,7 @@ intubation <-
               values_from = I,
               names_prefix = "I_")
 
-i <- sample(dim(outcome)[1],size = 1);outcomes[i,];outcome[i,1:14];cens[i,1:14];intubation[i,1:14]
-
-intubation[,3:dim(intubation)[2]] <- (intubation[,3:dim(intubation)[2]] + 1) * cens[,2:dim(cens)[2]]
-
-intubation[,3:dim(intubation)[2]][intubation[,3:dim(intubation)[2]] == 0] <- NA
-
-intubation[,3:dim(intubation)[2]] <- intubation[,3:dim(intubation)[2]] - 1
-
-i <- sample(dim(outcome)[1],size = 1);outcomes[i,];outcome[i,1:14];cens[i,1:14];intubation[i,1:14]
+# i <- sample(dim(outcome)[1],size = 1);outcomes[i,];outcome[i,1:14];cens[i,1:14];intubation[i,1:14]
 
 # outcome wide format
 outcome <-
@@ -159,6 +159,12 @@ comp_risk %>%
   slice_sample(n=10)
 
 i <- sample(dim(outcome)[1],size = 1);outcomes[i,];outcome[i,1:15] %>% select(-event);cens[i,1:14];intubation[i,1:15] %>% select(-fu);comp_risk[i,1:15] %>% select(-fu)
+
+intubation[,3:dim(intubation)[2]] <- (intubation[,3:dim(intubation)[2]] + 1) * cens[,2:dim(cens)[2]]
+
+intubation[,3:dim(intubation)[2]][intubation[,3:dim(intubation)[2]] == 0] <- NA
+
+intubation[,3:dim(intubation)[2]] <- intubation[,3:dim(intubation)[2]] - 1
 
 dat_final <- 
   outcomes %>% # contains fu, event, cr columns
