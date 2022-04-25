@@ -127,7 +127,7 @@ comp_risk <-
               names_prefix = "CR_") %>%
   ungroup()
 
-i <- sample(dim(outcome)[1],size = 1);outcomes[i,];outcome[i,1:15] %>% select(-event);cens[i,1:14];intubation[i,1:15] %>% select(-fu);comp_risk[i,1:15] %>% select(-fu)
+i <- sample(dim(outcome)[1],size = 1);outcomes[i,];outcome[i,1:15] %>% select(-event);cens[i,1:14];intubation[i,1:15] %>% select(-fu);comp_risk[i,1:16] %>% select(-fu, -event)
 
 for (i in 1:dim(outcome)[1]) {
   if (sum(is.na(outcome[i,1:15] %>% select(-event))) == 0 & sum(is.na(intubation[i,1:15] %>% select(-fu))) > 0) {
