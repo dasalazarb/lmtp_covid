@@ -103,8 +103,7 @@ intubation[,3:dim(intubation)[2]][intubation[,3:dim(intubation)[2]] == 0] <- NA
 
 intubation[,3:dim(intubation)[2]] <- intubation[,3:dim(intubation)[2]] - 1
 
-i <- sample(dim(outcome)[1],size = 1);outcomes[i,];outcome[i,1:15] %>% select(-event);cens[i,1:14];intubation[i,1:15] %>% select(-fu)
-
+i <- sample(which(outcome$event == 0),size = 1);outcomes[i,];outcome[i,1:15] %>% select(-event);cens[i,1:14];intubation[i,1:15] %>% select(-fu)
 
 dat_final <- 
   outcomes %>% # contains fu, event, cr columns
