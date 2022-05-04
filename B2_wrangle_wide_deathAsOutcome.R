@@ -96,12 +96,12 @@ outcome <-
   ungroup()
 outcome
 
-## using the cens pattern to correct the intubation pattern
-intubation[,3:dim(intubation)[2]] <- (intubation[,3:dim(intubation)[2]] + 1) * cens[,2:dim(cens)[2]]
-
-intubation[,3:dim(intubation)[2]][intubation[,3:dim(intubation)[2]] == 0] <- NA
-
-intubation[,3:dim(intubation)[2]] <- intubation[,3:dim(intubation)[2]] - 1
+# ## using the cens pattern to correct the intubation pattern
+# intubation[,3:dim(intubation)[2]] <- (intubation[,3:dim(intubation)[2]] + 1) * cens[,2:dim(cens)[2]]
+# 
+# intubation[,3:dim(intubation)[2]][intubation[,3:dim(intubation)[2]] == 0] <- NA
+# 
+# intubation[,3:dim(intubation)[2]] <- intubation[,3:dim(intubation)[2]] - 1
 
 i <- sample(which(outcome$event == 0),size = 1);outcomes[i,];outcome[i,1:15] %>% select(-event);cens[i,1:14];intubation[i,1:15] %>% select(-fu)
 
@@ -130,8 +130,25 @@ for (i in 0:26){
 
 saveRDS(dat_final, "data/derived/dat_final_deathAsOutcome.rds")
 
-write.csv(dat_final %>% select_if(function(x) any(is.na(x))), "review_Y_L.csv")
+# write.csv(dat_final %>% select_if(function(x) any(is.na(x))), "review_Y_L.csv")
+# 
+dat_final <- readRDS("data/derived/dat_final_deathAsOutcome.rds")
 
+
+cens <- dat_final %>%
+  select(id, starts_with("C_"))
+
+intubation <- dat_final %>%
+  select(id, starts_with("I_"))
+
+outcome <- dat_final %>%
+  select(id, starts_with("Y_"))
+
+outcomes <- dat_final %>%
+  select(id, fu, event)
+
+i <- sample(dim(dat_final)[1],size = 1);outcomes[i,];outcome[i,1:15];cens[i,1:15];intubation[i,1:15]
+i <- sample(which(dat_final$fu == 1),size = 1);outcomes[i,];outcome[i,1:15];cens[i,1:15];intubation[i,1:15]
 
 # out_mtp
 
