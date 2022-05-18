@@ -6,10 +6,10 @@ library(lubridate)
 ## load data
 
 # read in all cohort after determining in steroids_create_analytic_file-1.Rmd
-cohort <- read_rds(here::here("data/derived/cohort_w_labs.rds"))
+cohort <- read_rds(here::here("data/derived/cohort_w_labs.rds")); head(cohort); dim(cohort)
 
 outcome_exposure <- read_rds(here::here("data/derived/outcome_exposure.rds"))%>%
-  filter(empi %in% cohort$empi)
+  filter(empi %in% cohort$empi); head(outcome_exposure); dim(outcome_exposure)
 
 # aki <- read_rds(here::here("data/derived/kh_aki.rds"))
 dialysis.1 <- read_rds(here::here("data/raw/2020-08-17/covid_datalake_wcm_procedures.rds")); head(dialysis.1); dim(dialysis.1)
@@ -67,7 +67,7 @@ outcomes <-
          cr = event_death_28d_from_hosp) %>% 
   filter(fu > 0) %>% 
   distinct(); outcomes; dim(outcomes) # note that final cohort is 3,300
-table(outcomes$fu, outcomes$event)
+sum(table(outcomes$fu, outcomes$event)[,2])
 
 max_fu_day <- 28
 
@@ -115,7 +115,7 @@ intubation <-
 outcome <-
   outcomes %>%
   group_by(id) %>%
-  mutate(day = 1) %>%
+  mutate(day = 1) %>% 
   complete(day = full_seq(1:max_fu_day, 1)) %>% 
   fill(fu, event, .direction = "downup") %>% 
   mutate(
@@ -160,11 +160,11 @@ comp_risk %>%
 
 
 ## using the cens pattern to correct the intubation pattern
-intubation[,3:dim(intubation)[2]] <- (intubation[,3:dim(intubation)[2]] + 1) * cens[,2:dim(cens)[2]]
+# intubation[,3:dim(intubation)[2]] <- (intubation[,3:dim(intubation)[2]] + 1) * cens[,2:dim(cens)[2]]
 
-intubation[,3:dim(intubation)[2]][intubation[,3:dim(intubation)[2]] == 0] <- NA
+# intubation[,3:dim(intubation)[2]][intubation[,3:dim(intubation)[2]] == 0] <- NA
 
-intubation[,3:dim(intubation)[2]] <- intubation[,3:dim(intubation)[2]] - 1
+# intubation[,3:dim(intubation)[2]] <- intubation[,3:dim(intubation)[2]] - 1
 
 i <- sample(which(outcome$event == 0),size = 1);outcomes[i,];outcome[i,1:15] %>% select(-event);cens[i,1:14];intubation[i,1:15] %>% select(-fu);comp_risk[i,1:16] %>% select(-fu, -event)
 
@@ -197,6 +197,6 @@ for (i in 0:26){
 
 table(dat_final %>% filter(fu<=14) %>% select(event))
 
-saveRDS(dat_final, "data/derived/dat_final_dialysisAsOutcome.rds")
+saveRDS(dat_final, "data/derived/dat_final_deathAsCompRisk.rds")
 
 
