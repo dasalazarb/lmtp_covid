@@ -45,11 +45,8 @@ head(dialysis, 5); dim(dialysis)
 ## between 2020-03-03 and 2020-07-01, there are 201 patients
 sum(dialysis$procedure_dt_tm >= as.Date("2020-03-03") & dialysis$procedure_dt_tm <= as.Date("2020-07-01"))
 
-## However, # common patients in cohort and dialysis dataset
-length(intersect(cohort$empi, dialysis$empi)) ## 52
-
-# tz(dialysis$procedure_dt_tm) <- "America/New_York"
-# tz(dialysis$dialysis_date) <- "America/New_York"
+## Number of common patients in cohort and dialysis datasets
+length(intersect(cohort$empi, dialysis$empi)) ## 52 patients
 
 events_day_with_steroids <- readr::read_rds(here::here("data/derived/events_day_w_steroids.rds")) %>%
   filter(empi %in% cohort$empi)
@@ -63,7 +60,7 @@ outcomes <-
   select(empi, ed_adm_dt, end_dt, procedure_dt_tm, procedure_description, death) %>% 
   # add days from hospitalization to death
   mutate(event_dialysis = case_when(str_detect(tolower(procedure_description), "dialysis") ~ 1, 
-                                    TRUE ~ 0), ## -> 14 event_dialysis
+                                    TRUE ~ 0), 
          # add in dialysis time to the end date (should be before death)
          end_dt = pmin(end_dt, procedure_dt_tm, na.rm=T),
          days_to_dialysis_death_discharge = ceiling(time_length(difftime(end_dt, ed_adm_dt), unit="day")),
