@@ -11,28 +11,42 @@ cohort <- read_rds(here::here("data/derived/cohort_w_labs.rds")); head(cohort); 
 outcome_exposure <- read_rds(here::here("data/derived/outcome_exposure.rds"))%>%
   filter(empi %in% cohort$empi); head(outcome_exposure); dim(outcome_exposure)
 
-# aki <- read_rds(here::here("data/derived/kh_aki.rds"))
+## old dialysis data
 dialysis.1 <- read_rds(here::here("data/raw/2020-08-17/covid_datalake_wcm_procedures.rds")); head(dialysis.1); dim(dialysis.1)
+
+## new dialysis data
 dialysis.2 <- readxl::read_excel(here::here("data/raw/2020-08-17/RITM0529623_hoffman.xlsx")) %>% 
   mutate(procedure_description = "dialysis", procedure_dt_tm=as.Date(dialysis_date)) %>% 
   select(-dialysis_date); head(dialysis.2); dim(dialysis.2)
 
-tz(dialysis.1$procedure_dt_tm) <- "America/New_York"
-tz(dialysis.2$procedure_dt_tm) <- "America/New_York"
+# tz(dialysis.1$procedure_dt_tm) <- "America/New_York"
+# tz(dialysis.2$procedure_dt_tm) <- "America/New_York"
 
+## merge old and new data
 dialysis <- dialysis.2 %>% 
   mutate(empi=as.character(empi)) %>% 
+  ## bind rows of old data
   bind_rows(dialysis.1 %>% 
               filter(str_detect(tolower(procedure_description), "dialysis")) %>% 
               mutate(procedure_description = "dialysis") %>% 
               select(empi, procedure_dt_tm, procedure_description) ) %>% 
-  # select(empi, procedure_description, dialysis_date) %>% 
+  ## remove dates before 2020-03-03 -> useful for the slice_min
   filter(procedure_dt_tm >= "2020-03-03") %>% 
+  ## when was the first dialysis procedure for each patient?
   group_by(empi) %>% 
   slice_min(procedure_dt_tm) %>% 
   ungroup() %>% 
+  ## maintain unique records per patient
   distinct()
+
+## there are 232 patients with dialysis procedure
 head(dialysis, 5); dim(dialysis)
+
+## between 2020-03-03 and 2020-07-01, there are 201 patients
+sum(dialysis$procedure_dt_tm >= as.Date("2020-03-03") & dialysis$procedure_dt_tm <= as.Date("2020-07-01"))
+
+## However, # common patients in cohort and dialysis dataset
+length(intersect(cohort$empi, dialysis$empi)) ## 52
 
 # tz(dialysis$procedure_dt_tm) <- "America/New_York"
 # tz(dialysis$dialysis_date) <- "America/New_York"
@@ -45,7 +59,7 @@ dat_full <-  readr::read_rds(here::here("data/derived/dat_full.rds"))
 
 outcomes <- 
   cohort %>% 
-  left_join(dialysis, by="empi") %>% 
+  left_join(dialysis, by="empi") %>% # -> 52 patients with dialysis info
   select(empi, ed_adm_dt, end_dt, procedure_dt_tm, procedure_description, death) %>% 
   # add days from hospitalization to death
   mutate(event_dialysis = case_when(str_detect(tolower(procedure_description), "dialysis") ~ 1, 
